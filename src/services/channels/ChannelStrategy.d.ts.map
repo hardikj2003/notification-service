@@ -1,0 +1,1 @@
+{"version":3,"file":"ChannelStrategy.d.ts","sourceRoot":"","sources":["ChannelStrategy.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,gBAAgB,CAAC;AAEnD,MAAM,WAAW,eAAe;IAC9B,WAAW,EAAE,MAAM,CAAC;IACpB,IAAI,CAAC,YAAY,EAAE,YAAY,GAAG,OAAO,CAAC,OAAO,CAAC,CAAC;CACpD"}

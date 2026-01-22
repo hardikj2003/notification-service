@@ -1,0 +1,1 @@
+{"version":3,"file":"EmailStrategy.d.ts","sourceRoot":"","sources":["EmailStrategy.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,eAAe,EAAE,MAAM,sBAAsB,CAAC;AAC5D,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,gBAAgB,CAAC;AAEnD,qBAAa,aAAc,YAAW,eAAe;IACnD,QAAQ,CAAC,WAAW,WAAW;IAEzB,IAAI,CAAC,YAAY,EAAE,YAAY,GAAG,OAAO,CAAC,OAAO,CAAC;CAMzD"}

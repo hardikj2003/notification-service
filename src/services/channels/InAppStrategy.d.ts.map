@@ -1,0 +1,1 @@
+{"version":3,"file":"InAppStrategy.d.ts","sourceRoot":"","sources":["InAppStrategy.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,eAAe,EAAE,MAAM,sBAAsB,CAAC;AAC5D,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,gBAAgB,CAAC;AAGnD,qBAAa,aAAc,YAAW,eAAe;IACnD,QAAQ,CAAC,WAAW,YAAY;IAE1B,IAAI,CAAC,YAAY,EAAE,YAAY,GAAG,OAAO,CAAC,OAAO,CAAC;CAazD"}
