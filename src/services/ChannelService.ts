@@ -1,5 +1,6 @@
 import type { ChannelStrategy } from './channels/ChannelStrategy.js';
 import { EmailStrategy } from './channels/EmailStrategy.js';
+import { InAppStrategy } from './channels/InAppStrategy.js';
 // import { SmsStrategy } from './channels/SmsStrategy'; // To be implemented
 
 export class ChannelService {
@@ -9,6 +10,7 @@ export class ChannelService {
     // Register strategies
     const email = new EmailStrategy();
     this.strategies.set(email.channelName, email);
+    this.strategies.set('IN_APP', new InAppStrategy());
   }
 
   getStrategy(channel: string): ChannelStrategy {

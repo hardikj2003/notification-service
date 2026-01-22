@@ -4,8 +4,11 @@ import { rabbitMQ } from "./lib/rabbitmq.js";
 import { startWorker } from "./jobs/NotificationWorker.js";
 import templateRoutes from "./api/routes/templateRoutes.js";
 import notificationRoutes from "./api/routes/notificationRoutes.js";
+import { createServer } from 'http'; // Required for Socket.io
+import { SocketService } from './services/SocketService.js';
 
 const app = express();
+const httpServer = createServer(app);
 app.use(cors());
 app.use(express.json());
 
@@ -15,19 +18,19 @@ app.use("/api/v1/notifications", notificationRoutes);
 
 const bootstrap = async () => {
   try {
-    // Connect to Broker
     await rabbitMQ.connect();
+    
+    // Initialize WebSockets (Requirement 4.6.6 & 4.6.12)
+    await SocketService.init(httpServer);
 
-    // Start Worker to handle Section 4.6 (Technical Requirements)
     await startWorker();
 
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+    httpServer.listen(PORT, () => {
+      console.log(`🚀 Server & WebSockets running on port ${PORT}`);
     });
   } catch (error) {
-    console.error("Failed to start the application:", error);
-    process.exit(1);
+    console.error('Initialization failed:', error);
   }
 };
 
