@@ -53,3 +53,15 @@ A robust, event-driven notification engine built with **Node.js**, **TypeScript*
 Spin up PostgreSQL, RabbitMQ, and Redis using the provided configuration:
 ```bash
 docker-compose up -d
+# Install project dependencies
+npm install
+
+# Run migrations to create core tables (Templates, Notifications, etc.)
+npx prisma migrate dev --name init_schema
+
+# Generate the Prisma Client
+npx prisma generate
+
+# Start the server and background worker in development mode
+npm run dev
+```
