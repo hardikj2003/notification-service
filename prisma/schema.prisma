@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model NotificationTemplate {
+  id             String         @id @default(uuid())
+  name           String
+  category       String // marketing, transactional, alert
+  eventType      String         @map("event_type")
+  emailSubject   String?        @map("email_subject")
+  emailBodyHtml  String?        @map("email_body_html")
+  emailBodyText  String?        @map("email_body_text")
+  smsContent     String?        @map("sms_content")
+  pushTitle      String?        @map("push_title")
+  pushBody       String?        @map("push_body")
+  inAppTitle     String?        @map("in_app_title")
+  inAppBody      String?        @map("in_app_body")
+  variables      Json // JSONB field for variable substitution
+  defaultChannel String         @map("default_channel")
+  isActive       Boolean        @default(true) @map("is_active")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  notifications  Notification[]
+
+  @@map("notification_templates")
+}
+
+model Notification {
+  id            String               @id @default(uuid())
+  userId        String               @map("user_id")
+  templateId    String               @map("template_id")
+  template      NotificationTemplate @relation(fields: [templateId], references: [id])
+  category      String
+  priority      Priority             @default(MEDIUM)
+  channel       String
+  status        NotificationStatus   @default(PENDING)
+  subject       String?
+  content       String?
+  contentHtml   String?              @map("content_html")
+  metadata      Json? // For images, action buttons, deep links
+  actionUrl     String?              @map("action_url")
+  actionLabel   String?              @map("action_label")
+  imageUrl      String?              @map("image_url")
+  scheduledFor  DateTime?            @map("scheduled_for")
+  sentAt        DateTime?            @map("sent_at")
+  deliveredAt   DateTime?            @map("delivered_at")
+  readAt        DateTime?            @map("read_at")
+  failedAt      DateTime?            @map("failed_at")
+  failureReason String?              @map("failure_reason")
+  retryCount    Int                  @default(0) @map("retry_count")
+  maxRetries    Int                  @default(3) @map("max_retries")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+
+  @@map("notifications")
+}
+
+model UserNotificationPreference {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  category        String
+  emailEnabled    Boolean   @default(true) @map("email_enabled")
+  smsEnabled      Boolean   @default(true) @map("sms_enabled")
+  pushEnabled     Boolean   @default(true) @map("push_enabled")
+  inAppEnabled    Boolean   @default(true) @map("in_app_enabled")
+  frequency       Frequency @default(IMMEDIATE)
+  quietHoursStart String?   @map("quiet_hours_start") // Format: "HH:mm"
+  quietHoursEnd   String?   @map("quiet_hours_end")
+  timezone        String    @default("UTC")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, category])
+  @@map("user_notification_preferences")
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  READ
+}
+
+enum Frequency {
+  IMMEDIATE
+  DAILY_DIGEST
+  WEEKLY_DIGEST
+}
