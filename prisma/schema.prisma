@@ -77,6 +77,37 @@ model UserNotificationPreference {
   @@map("user_notification_preferences")
 }
 
+model PushSubscription {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  deviceType  String   @map("device_type")
+  deviceToken String   @map("device_token")
+  platform    String // IOS, ANDROID, WEB
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("push_subscriptions") // Maps the TS model to the requirement's table name
+}
+
+model NotificationEvent {
+  id             String                @id @default(uuid())
+  notificationId String                @map("notification_id")
+  eventType      NotificationEventType @map("event_type")
+  metadata       Json?                 @map("metadata") // JSONB for additional event data
+  createdAt      DateTime              @default(now()) @map("created_at")
+
+  @@map("notification_events")
+}
+
+enum NotificationEventType {
+  SENT
+  DELIVERED
+  READ
+  CLICKED
+  FAILED
+}
+
 enum Priority {
   LOW
   MEDIUM

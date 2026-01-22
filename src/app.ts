@@ -2,8 +2,10 @@ import express from "express";
 import cors from "cors";
 import { rabbitMQ } from "./lib/rabbitmq.js";
 import { startWorker } from "./jobs/NotificationWorker.js";
-import templateRoutes from "./api/routes/templateRoutes.js";
-import notificationRoutes from "./api/routes/notificationRoutes.js";
+import templateRoutes from './api/routes/templateRoutes.js';
+import notificationRoutes from './api/routes/notificationRoutes.js';
+import preferenceRoutes from './api/routes/preferenceRoutes.js';
+import subscriptionRoutes from './api/routes/subscriptionRoutes.js';
 import { createServer } from 'http'; // Required for Socket.io
 import { SocketService } from './services/SocketService.js';
 
@@ -13,8 +15,10 @@ app.use(cors());
 app.use(express.json());
 
 // API Endpoints (Requirement 4.4)
-app.use("/api/v1/notifications/templates", templateRoutes);
-app.use("/api/v1/notifications", notificationRoutes);
+app.use('/api/v1/notifications/templates', templateRoutes);
+app.use('/api/v1/notifications/preferences', preferenceRoutes);
+app.use('/api/v1/notifications/push', subscriptionRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 const bootstrap = async () => {
   try {

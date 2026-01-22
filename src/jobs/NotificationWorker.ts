@@ -1,6 +1,7 @@
 import { rabbitMQ } from "../lib/rabbitmq.js";
 import { prisma } from "../lib/db.js";
 import { ChannelService } from "../services/ChannelService.js";
+import { NotificationStatus } from "@prisma/client";
 
 const channelService = new ChannelService();
 
@@ -8,46 +9,61 @@ export const startWorker = async () => {
   const channel = rabbitMQ.getChannel();
   if (!channel) return;
 
-  console.log("🚀 Worker started: Listening for notification events...");
-
   channel.consume("notification_queue", async (msg) => {
     if (!msg) return;
-
     const { notificationId } = JSON.parse(msg.content.toString());
 
     try {
-      // Fetch notification details from DB
       const notification = await prisma.notification.findUnique({
         where: { id: notificationId },
       });
 
-      if (notification && notification.status === "PENDING") {
-        // Requirement 4.5.2: Use ChannelService (Strategy Pattern)
-        const strategy = channelService.getStrategy(notification.channel);
-
-        // Requirement 4.6.11: Exponential Backoff (Simplified for now)
-        const success = await strategy.send(notification);
-
-        if (success) {
-          // Requirement 4.4.2: Mark as sent
-          await prisma.notification.update({
-            where: { id: notificationId },
-            data: {
-              status: "SENT",
-              sentAt: new Date(),
-            },
-          });
-        }
+      if (!notification || notification.status === NotificationStatus.SENT) {
+        return channel.ack(msg);
       }
 
-      // Acknowledge that the message has been processed
-      channel.ack(msg);
-    } catch (error) {
-      console.error(`Error processing notification ${notificationId}:`, error);
+      const strategy = channelService.getStrategy(notification.channel);
+      const success = await strategy.send(notification);
 
-      // If failed, re-queue the message for retry (Requirement 4.6.11)
-      // In a production app, we would increment retry_count here
-      channel.nack(msg, false, true);
+      if (success) {
+        await prisma.notification.update({
+          where: { id: notificationId },
+          data: { status: NotificationStatus.SENT, sentAt: new Date() },
+        });
+        channel.ack(msg);
+      } else {
+        throw new Error("Delivery failed");
+      }
+    } catch (error) {
+      // Requirement 4.6.11: Implement exponential backoff for retries
+      const notification = await prisma.notification.findUnique({
+        where: { id: notificationId },
+      });
+      const retryCount = (notification?.retryCount || 0) + 1;
+
+      if (retryCount <= (notification?.maxRetries || 3)) {
+        // Calculate delay: 2^retryCount * 1000ms (1s, 2s, 4s, 8s...)
+        const delay = Math.pow(2, retryCount) * 1000;
+
+        await prisma.notification.update({
+          where: { id: notificationId },
+          data: { retryCount },
+        });
+
+        console.log(`Retrying notification ${notificationId} in ${delay}ms...`);
+
+        // Re-queue with a delay (Simplified for RabbitMQ)
+        setTimeout(() => {
+          channel.nack(msg, false, true);
+        }, delay);
+      } else {
+        // Mark as FAILED after max retries (Section 4.3)
+        await prisma.notification.update({
+          where: { id: notificationId },
+          data: { status: NotificationStatus.FAILED, failedAt: new Date() },
+        });
+        channel.ack(msg);
+      }
     }
   });
 };
